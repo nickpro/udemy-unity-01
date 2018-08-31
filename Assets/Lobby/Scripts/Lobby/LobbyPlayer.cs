@@ -16,6 +16,7 @@ namespace Prototype.NetworkLobby
         static List<int> _colorInUse = new List<int>();
 
         public Button colorButton;
+        public Button colorLabelButton;
         public InputField nameInput;
         public Button readyButton;
         public Button waitingPlayerButton;
@@ -29,6 +30,9 @@ namespace Prototype.NetworkLobby
         public string playerName = "";
         [SyncVar(hook = "OnMyColor")]
         public Color playerColor = Color.white;
+        [SyncVar(hook = "OnMyColorLabel")]
+        public Color labelColor = Color.white;
+
 
         public Color OddRowColor = new Color(250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f, 1.0f);
         public Color EvenRowColor = new Color(180.0f / 255.0f, 180.0f / 255.0f, 180.0f / 255.0f, 1.0f);
@@ -121,6 +125,7 @@ namespace Prototype.NetworkLobby
 
             //we switch from simple name display to name input
             colorButton.interactable = true;
+            colorLabelButton.interactable = true;
             nameInput.interactable = true;
 
             nameInput.onEndEdit.RemoveAllListeners();
@@ -128,6 +133,9 @@ namespace Prototype.NetworkLobby
 
             colorButton.onClick.RemoveAllListeners();
             colorButton.onClick.AddListener(OnColorClicked);
+
+            colorLabelButton.onClick.RemoveAllListeners();
+            colorLabelButton.onClick.AddListener(OnColorLabelClicked);
 
             readyButton.onClick.RemoveAllListeners();
             readyButton.onClick.AddListener(OnReadyClicked);
@@ -161,6 +169,7 @@ namespace Prototype.NetworkLobby
                 textComponent.color = ReadyColor;
                 readyButton.interactable = false;
                 colorButton.interactable = false;
+                colorLabelButton.interactable = false;
                 nameInput.interactable = false;
             }
             else
@@ -172,6 +181,7 @@ namespace Prototype.NetworkLobby
                 textComponent.color = Color.white;
                 readyButton.interactable = isLocalPlayer;
                 colorButton.interactable = isLocalPlayer;
+                colorLabelButton.interactable = isLocalPlayer;
                 nameInput.interactable = isLocalPlayer;
             }
         }
@@ -195,6 +205,12 @@ namespace Prototype.NetworkLobby
             colorButton.GetComponent<Image>().color = newColor;
         }
 
+        public void OnMyColorLabel(Color newColor)
+        {
+            labelColor = newColor;
+            colorLabelButton.GetComponent<Image>().color = newColor;
+        }
+
         //===== UI Handler
 
         //Note that those handler use Command function, as we need to change the value on the server not locally
@@ -202,6 +218,11 @@ namespace Prototype.NetworkLobby
         public void OnColorClicked()
         {
             CmdColorChange();
+        }
+
+        public void OnColorLabelClicked()
+        {
+            CmdColorLabelChange();
         }
 
         public void OnReadyClicked()
@@ -284,6 +305,46 @@ namespace Prototype.NetworkLobby
 
             playerColor = Colors[idx];
         }
+
+        [Command]
+        public void CmdColorLabelChange()
+        {
+            int idx = System.Array.IndexOf(Colors, labelColor);
+
+            int inUseIdx = _colorInUse.IndexOf(idx);
+
+            if (idx < 0) idx = 0;
+
+            idx = (idx + 1) % Colors.Length;
+
+            bool alreadyInUse = false;
+
+            do
+            {
+                alreadyInUse = false;
+                for (int i = 0; i < _colorInUse.Count; ++i)
+                {
+                    if (_colorInUse[i] == idx)
+                    {//that color is already in use
+                        alreadyInUse = true;
+                        idx = (idx + 1) % Colors.Length;
+                    }
+                }
+            }
+            while (alreadyInUse);
+
+            if (inUseIdx >= 0)
+            {//if we already add an entry in the colorTabs, we change it
+                _colorInUse[inUseIdx] = idx;
+            }
+            else
+            {//else we add it
+                _colorInUse.Add(idx);
+            }
+
+            labelColor = Colors[idx];
+        }
+
 
         [Command]
         public void CmdNameChanged(string name)

@@ -13,6 +13,7 @@ public class NetworkLobbyHook : LobbyHook {
 
         car.pName = lobby.playerName;
         car.pColour = ColorUtility.ToHtmlStringRGBA(lobby.playerColor);
+        car.pLabel = ColorUtility.ToHtmlStringRGBA(lobby.labelColor);
 		//base.OnLobbyServerSceneLoadedForPlayer(manager, lobbyPlayer, gamePlayer);
 	}
 }

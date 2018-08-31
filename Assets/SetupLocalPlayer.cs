@@ -17,6 +17,9 @@ public class SetupLocalPlayer : NetworkBehaviour {
 	[SyncVar (hook = "OnChangeColour")]
 	public string pColour = "#ffffff";
 
+    [SyncVar(hook = "OnChangeLabelColour")]
+    public string pLabel = "#ffffff";
+
     void OnChangeName (string n)
     {
 		pName = n;
@@ -33,6 +36,14 @@ public class SetupLocalPlayer : NetworkBehaviour {
          	if(r.gameObject.name == "BODY")
             	r.material.SetColor("_Color", ColorFromHex(pColour));
         }
+    }
+
+    void OnChangeLabelColour(string n)
+    {
+        pLabel = n;
+        Color c = ColorFromHex(pLabel);
+        c.a = 255;
+        nameLabel.GetComponent<Image>().color = c;
     }
 
 
